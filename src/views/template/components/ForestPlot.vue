@@ -65,7 +65,12 @@ const drawChart = () => {
   svg
     .append("g")
     .attr("transform", `translate(${x(1.0)},0)`)
-    .call(d3.axisLeft(y).tickSize(0).tickFormat("")); // 将 Y 轴移动到 X 轴的 1.0 位置
+    .call(
+      d3
+        .axisLeft(y)
+        .tickSize(0)
+        .tickFormat("" as any)
+    ); // 将 Y 轴移动到 X 轴的 1.0 位置
 
   const color = d3.scaleOrdinal(d3.schemeCategory10);
 
