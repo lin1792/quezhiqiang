@@ -19,9 +19,12 @@ const chart = ref(null as any);
 const data = ref<DataItem[]>([]);
 
 const drawChart = () => {
-  const margin = { top: 20, right: 30, bottom: 40, left: 200 },
-    width = 960 - margin.left - margin.right,
-    height = data.value.length * 50 + margin.top + margin.bottom;
+  const margin = { top: 80, right: 30, bottom: 40, left: 200 },
+    // width = 960 - margin.left - margin.right,
+    // height = data.value.length * 50 + margin.top + margin.bottom;
+
+    width = 1920,
+    height = 1080;
 
   d3.select(chart.value).select("svg").remove();
 
@@ -33,7 +36,20 @@ const drawChart = () => {
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  const x = d3.scaleLinear().domain([0, 2]).range([0, width]);
+  // 添加列头
+  const headers = ["character", "95% CI", "p", "p for interaction"];
+  headers.forEach((header, i) => {
+    svg
+      .append("text")
+      .attr("x", i === 0 ? -100 : i === 1 ? 200 : i === 2 ? 400 : i === 3 ? 500 : 600) // 设置每个列头的 x 坐标，调整位置
+      .attr("y", -margin.top / 2)
+      .attr("text-anchor", "start")
+      .style("font-size", "12px")
+      .style("font-weight", "bold")
+      .text(header);
+  });
+
+  const x = d3.scaleLinear().domain([0, 2]).range([0, 200]);
   const y = d3
     .scaleBand()
     .domain(data.value.map((d: any) => d.id))
@@ -53,8 +69,8 @@ const drawChart = () => {
 
   const color = d3.scaleOrdinal(d3.schemeCategory10);
 
-  data.value.forEach((d: DataItem) => {
-    d.series.forEach((s: DataSeries, i: number) => {
+  data.value.forEach((d: any) => {
+    d.series.forEach((s: any, i: number) => {
       const yPos = y(d.id)! + ((i + 1) * y.bandwidth()) / (d.series.length + 1);
 
       // 绘制置信区间的线
@@ -107,12 +123,43 @@ const drawChart = () => {
       svg
         .append("text")
         .attr("class", "y-axis-label")
-        .attr("x", -10)
+        .attr("x", -200)
         .attr("y", yPos)
         .attr("dy", ".35em")
-        .attr("text-anchor", "end")
+        .attr("text-anchor", "start")
         .attr("fill", "black")
         .text(d.label);
+
+      // 添加自定义的 y 轴标签
+      svg
+        .append("text")
+        .attr("class", "y-axis-label")
+        .attr("x", 200)
+        .attr("y", yPos)
+        .attr("dy", ".35em")
+        .attr("text-anchor", "start")
+        .attr("fill", "black")
+        .text(s["95% CI"]);
+      // 添加自定义的 y 轴标签
+      svg
+        .append("text")
+        .attr("class", "y-axis-label")
+        .attr("x", 400)
+        .attr("y", yPos)
+        .attr("dy", ".35em")
+        .attr("text-anchor", "start")
+        .attr("fill", "black")
+        .text(s.p);
+      // 添加自定义的 y 轴标签
+      svg
+        .append("text")
+        .attr("class", "y-axis-label")
+        .attr("x", 500)
+        .attr("y", yPos)
+        .attr("dy", ".35em")
+        .attr("text-anchor", "start")
+        .attr("fill", "black")
+        .text(s["p for interaction"]);
     });
   });
 };

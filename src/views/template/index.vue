@@ -1,7 +1,7 @@
 <template>
   <div class="home card">
-    <div class="footer">
-      <el-button type="primary" @click="exportAction">生成图</el-button>
+    <div class="bts">
+      <el-button type="primary" @click="exportAction">生成图片</el-button>
       <el-upload
         class="upload-demo"
         ref="upload"
@@ -33,7 +33,7 @@ const tableData = ref([
 ] as any);
 const ForestPlotRef = ref(null as any);
 const create = () => {
-  console.log(tableData.value);
+  // console.log(tableData.value);
   ForestPlotRef.value.data = [...tableData.value];
   ForestPlotRef.value.drawChart();
 };
@@ -59,6 +59,7 @@ const uploadExcel = (file: any, fileList: any) => {
         // Object.values(item).map((child: any, index: number) => {
         //   obj[`name${index}`] = child;
         // });
+        // console.log(obj);
 
         let dots: any = [];
         if (item["95% CI"]) {
@@ -73,7 +74,15 @@ const uploadExcel = (file: any, fileList: any) => {
         data.push({
           id: generateUUID(),
           label: item.character,
-          series: [{ pointEstimate: dots[0], ci: [dots[1], dots[2]], p: item.p }]
+          series: [
+            {
+              pointEstimate: dots[0],
+              "95% CI": item["95% CI"],
+              ci: [dots[1], dots[2]],
+              p: item.p,
+              "p for interaction": item["p for interaction"]
+            }
+          ]
         });
       });
       tableData.value = data;
@@ -124,8 +133,13 @@ onMounted(() => {});
 <style scoped lang="scss">
 @import "./index.scss";
 .home {
-  padding: 20px;
-  margin-top: 20px;
+  .bts {
+    display: flex;
+    align-items: center;
+    .el-button {
+      height: 100%;
+      margin-right: 20px;
+    }
+  }
 }
 </style>
-./components/ForestPlot.vue
