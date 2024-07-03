@@ -1,22 +1,22 @@
 {
-  "name": "北斗",
+  "name": "你好",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "北斗 open source management system",
+  "description": "你好 open source management system",
   "author": {
     "name": "Geeker",
     "email": "848130454@qq.com",
     "url": "https://github.com/HalseySpicy"
   },
   "license": "MIT",
-  "homepage": "https://github.com/HalseySpicy/北斗",
+  "homepage": "https://github.com/HalseySpicy/你好",
   "repository": {
     "type": "git",
-    "url": "git@github.com:HalseySpicy/北斗.git"
+    "url": "git@github.com:HalseySpicy/你好.git"
   },
   "bugs": {
-    "url": "https://github.com/HalseySpicy/北斗/issues"
+    "url": "https://github.com/HalseySpicy/你好/issues"
   },
   "scripts": {
     "dev": "vite",
