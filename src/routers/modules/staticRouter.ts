@@ -22,7 +22,7 @@ export const staticRouter: RouteRecordRaw[] = [
     name: "template",
     component: () => import("@/views/template/index.vue"),
     meta: {
-      title: "表格生成"
+      title: "图表生成"
     }
   },
   {
