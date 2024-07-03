@@ -25,6 +25,7 @@ import html2canvas from "html2canvas";
 import XLSX from "xlsx";
 import ForestPlot from "./components/ForestPlot.vue";
 import { ref, onMounted } from "vue";
+import { generateUUID } from "@/utils";
 const tableData = ref([
   ["femsa", "1.002(1.000, 1.004)", "<0.114"],
   ["ead", "1.002(1.000, 1.004)", "0.111"],
@@ -69,7 +70,11 @@ const uploadExcel = (file: any, fileList: any) => {
           dots = [mainNumber, ...innerNumbers];
         }
 
-        data.push({ label: item.character, pointEstimate: dots[0], ci: [dots[1], dots[2]], p: item.p });
+        data.push({
+          id: generateUUID(),
+          label: item.character,
+          series: [{ pointEstimate: dots[0], ci: [dots[1], dots[2]], p: item.p }]
+        });
       });
       tableData.value = data;
       console.log("导入excel", data);
