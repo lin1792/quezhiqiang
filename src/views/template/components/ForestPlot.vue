@@ -19,8 +19,8 @@ const props = defineProps({
 
 const chart = ref(null as any);
 const data = ref([] as any);
-let max = ref(0 as any);
 let min = ref(0 as any);
+let max = ref(0 as any);
 // 监听 picData 的变化
 
 const drawChart = () => {
@@ -176,8 +176,8 @@ watch(
     let minMaxList = data.value.filter((item: any) => {
       return Number(item.ci[0]);
     });
-    max.value = minMaxList[0].ci[1];
     min.value = minMaxList[0].ci[0];
+    max.value = minMaxList[0].ci[1];
     minMaxList.forEach((item: any) => {
       console.log(typeof item.ci[1] == "number");
       if (typeof item.ci[1] == "number") {
@@ -187,9 +187,10 @@ watch(
         min.value - item.ci[0] > 0 ? (min.value = item.ci[0]) : "";
       }
     });
+    // 固定坐标必须有0,1
     max.value < 1 ? (max.value = 1) : "";
     min.value > 0 ? (min.value = 0) : "";
-    console.log(max.value, min.value);
+    console.log(min.value, max.value);
 
     drawChart();
   },

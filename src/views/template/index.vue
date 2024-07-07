@@ -97,31 +97,38 @@ const uploadExcel = (file: any, fileList: any) => {
         type: "binary"
       });
       const wsname = workbook.SheetNames[0]; // 取第一张表
-      const ws: any = XLSX.utils.sheet_to_json(workbook.Sheets[wsname]); // 生成json表格内容
+      const ws: any = XLSX.utils.sheet_to_json(workbook.Sheets[wsname], { header: 1 }); // 生成json表格内容
+      console.log("元数据", ws);
+
       let data: any = [];
-      let header: any = [];
-      let lineKeys: any = [];
-      Object.keys(ws[0]).forEach((key: any) => {
-        header.push(key);
-        const isLine = ws.find((item: any) => {
-          return item[key].match(/([0-9.]+)\(([^)]+)\)/);
+      // let header: any = [];
+      let headers = ws[0];
+      headers.forEach((header: any, index: any) => {
+        const isLine = ws.slice(1).find((dataItem: any) => {
+          try {
+            return dataItem[index].match(/([0-9.]+)\(([^)]+)\)/);
+          } catch (error) {}
         });
         if (!!isLine) {
-          console.log(key);
-          lineKeys.push(key);
-          data.push({ header: key, data: [], type: "line" });
-          data.push({ header: key, data: [], type: "data" });
+          data.push({ header: "", data: [], type: "line", index: index });
+          data.push({ header: header, data: [], type: "data", index: index });
         } else {
-          data.push({ header: key, data: [], type: "data" });
+          data.push({ header: header, data: [], type: "data", index: index });
         }
       });
-      console.log(data);
-      ws.forEach((item: any) => {
-        data.forEach((dataItem: any) => {
-          if (dataItem.type != "line") {
-            dataItem.data.push(item[dataItem.header]);
-          } else {
-            let parts = item[dataItem.header].match(/([0-9.]+)\(([^)]+)\)/);
+      data.forEach((dataItem: any) => {
+        if (dataItem.type != "line") {
+          ws.slice(1).forEach((item: any) => {
+            dataItem.data.push(item[dataItem.index]);
+          });
+        } else {
+          ws.slice(1).forEach((item: any) => {
+            let parts = false as any;
+            try {
+              parts = item[dataItem.index].match(/([0-9.]+)\(([^)]+)\)/);
+            } catch (error) {}
+            console.log(!!parts);
+
             let dots: any = [];
             if (!!parts) {
               // 第一个部分是括号外的数值，第二个部分是括号内的数值
@@ -129,49 +136,13 @@ const uploadExcel = (file: any, fileList: any) => {
               let innerNumbers = parts[2].split(",").map((num: any) => parseFloat(num.trim()));
               // 将所有数值组合成一个数组
               dots = [mainNumber, ...innerNumbers];
-              // series[0].pointEstimate = dots[0]; //中点
-              // series[0].ci = [dots[1], dots[2]]; //区间
             } else {
             }
             dataItem.data.push({ id: generateUUID(), ci: [dots[1], dots[2]], pointEstimate: dots[0] });
-          }
-          // return dataItem;
-        });
-        // data.push({header:})
+          });
+        }
+        return dataItem;
       });
-
-      // ws.forEach((item: any) => {
-      //   console.log(item);
-      // const id = generateUUID();
-      // const label = item.character;
-      // let series = [{}] as any;
-      // series[0].pointEstimate = 0;
-      // series[0].ci = [0, 0];
-      // Object.keys(item).forEach((key: any) => {
-      //   let parts = item[key].match(/([0-9.]+)\(([^)]+)\)/);
-      //   if (!parts) {
-      //     // throw new Error("输入格式不正确");
-      //     series[0][key] = item[key];
-      //   } else {
-      //     let dots: any = [];
-      //     // 第一个部分是括号外的数值，第二个部分是括号内的数值
-      //     let parts = item[key].match(/([0-9.]+)\(([^)]+)\)/);
-      //     let mainNumber = parseFloat(parts[1]);
-      //     let innerNumbers = parts[2].split(",").map((num: any) => parseFloat(num.trim()));
-      //     // 将所有数值组合成一个数组
-      //     dots = [mainNumber, ...innerNumbers];
-      //     series[0].pointEstimate = dots[0];
-      //     series[0].ci = [dots[1], dots[2]];
-      //   }
-      // });
-      // console.log(series[0]);
-
-      // data.push({
-      //   id: id,
-      //   label: label,
-      //   series: series
-      // });
-      // });
       tableData.value = data;
       console.log("导入excel", tableData.value);
       create();
