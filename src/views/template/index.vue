@@ -6,6 +6,12 @@
         <el-button type="primary" @click="exportAction">生成图片</el-button>
       </div>
       <div>
+        <el-button type="primary" @click="saveAsPdf">生成PDF</el-button>
+      </div>
+      <div>
+        <el-button type="primary" @click="saveAsTiff">生成Tiff</el-button>
+      </div>
+      <div>
         <el-upload
           class="upload-demo"
           ref="upload"
@@ -20,8 +26,12 @@
         </el-upload>
       </div>
       <div>
-        <span>自定义点:</span>
+        <span>自定义区间点:</span>
         <input type="file" id="fileInput" accept="image/*" />
+      </div>
+      <div>
+        <span>自定义中点:</span>
+        <input type="file" id="fileInput2" accept="image/*" />
       </div>
       <div>
         <span>Y轴位置:</span>
@@ -52,6 +62,8 @@
 
 <script lang="ts" setup>
 import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import UTIF from "UTIF";
 import XLSX from "xlsx";
 import ForestPlot from "./components/ForestPlot.vue";
 import { ref, onMounted } from "vue";
@@ -63,26 +75,34 @@ const tableData = ref([
 ] as any);
 const ForestPlotRef = ref(null as any);
 let otherParams = ref({
-  dotImg: "",
+  rangeDotImg: "",
+  centerDotImg: "",
   yAxis: 1,
   xAxisWidth: 200
 } as any);
-const create = () => {
-  // console.log(tableData.value);
-  // ForestPlotRef.value.data = [...tableData.value];
-  // ForestPlotRef.value.drawChart();
-};
-function handleFileSelect(event: any) {
+
+const handleFileSelect = (event: any) => {
   const file = event.target.files[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = function (e: any) {
       console.log(e.target.result);
-      otherParams.value.dotImg = e.target.result;
+      otherParams.value.rangeDotImg = e.target.result;
     };
     reader.readAsDataURL(file);
   }
-}
+};
+const handleFileSelect2 = (event: any) => {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (e: any) {
+      console.log(e.target.result);
+      otherParams.value.centerDotImg = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+};
 
 //导入excel
 // const tableData: any = ref([]);
@@ -145,7 +165,6 @@ const uploadExcel = (file: any, fileList: any) => {
       });
       tableData.value = data;
       console.log("导入excel", tableData.value);
-      create();
     } catch (err) {
       console.log(err);
     }
@@ -184,14 +203,76 @@ const saveFile = (data: any, filename: any) => {
   save_link.click();
   save_link.remove();
 };
+const saveAsPdf = () => {
+  const element: any = document.getElementById("exportAll");
+  html2canvas(element).then(canvas => {
+    const pageData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF();
+    const imgWidth = 210; // A4 width in mm
+    const pageHeight = 297; // A4 height in mm
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(pageData, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(pageData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save("content.pdf");
+  });
+};
+
+const base64ToUint8Array = (base64String: any) => {
+  let padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  let base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
+
+  let rawData = window.atob(base64);
+  let outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+};
+const saveAsTiff = () => {
+  const element: any = document.getElementById("exportAll");
+  html2canvas(element).then(canvas => {
+    const pageData = canvas.toDataURL("image/png");
+    // const pageData = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height);
+    const image = new Image();
+    image.src = pageData;
+    image.onload = () => {
+      console.log(image.src.split(",")[1]);
+      let u8 = base64ToUint8Array(image.src.split(",")[1]);
+      const tiff = UTIF.encodeImage(u8, 200, 300);
+      const blob = new Blob([tiff], { type: "image/tiff" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "exported-image.tiff";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+  });
+};
 
 onMounted(() => {
   document.getElementById("fileInput")!.addEventListener("change", handleFileSelect, false);
+  document.getElementById("fileInput2")!.addEventListener("change", handleFileSelect2, false);
 });
 </script>
 
 <style scoped lang="scss">
 @import "./index.scss";
+* {
+  white-space: pre-wrap;
+}
 .home {
   .bts {
     display: flex;
@@ -214,7 +295,6 @@ onMounted(() => {
       .dataItems {
         display: flex;
         flex-direction: column;
-        align-items: center;
         height: calc(100% - 40px);
         & > .dataItem {
           display: flex;

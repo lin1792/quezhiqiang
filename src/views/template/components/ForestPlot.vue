@@ -82,7 +82,7 @@ const drawChart = () => {
     .attr("y2", (d: any) => y(d.id) + y.bandwidth() / 2)
     .attr("stroke", "black");
 
-  if (props.otherParams.dotImg) {
+  if (props.otherParams.rangeDotImg) {
     // 添加置信区间两个端点的圆点
     // 图片点
     svg
@@ -95,7 +95,7 @@ const drawChart = () => {
       .attr("y", (d: any) => y(d.id) + y.bandwidth() / 2 - 5) // 调整位置使图片居中
       .attr("width", (d: any) => (d.ci[0] ? 10 : 0)) // 设置图片宽度
       .attr("height", 10) // 设置图片高度
-      .attr("xlink:href", props.otherParams.dotImg); // 自定义图片路径
+      .attr("xlink:href", props.otherParams.rangeDotImg); // 自定义图片路径
     svg
       .selectAll(".point2")
       .data(data.value)
@@ -106,7 +106,49 @@ const drawChart = () => {
       .attr("y", (d: any) => y(d.id) + y.bandwidth() / 2 - 5) // 调整位置使图片居中
       .attr("width", (d: any) => (d.ci[1] ? 10 : 0)) // 设置图片宽度
       .attr("height", 10) // 设置图片高度
-      .attr("xlink:href", props.otherParams.dotImg); // 自定义图片路径
+      .attr("xlink:href", props.otherParams.rangeDotImg); // 自定义图片路径
+  } else {
+    //默认点
+    svg
+      .selectAll(".point1")
+      .data(data.value)
+      .enter()
+      .append("line")
+      .attr("class", "point1")
+      .attr("x1", (d: any) => x(d.ci[0]))
+      .attr("x2", (d: any) => x(d.ci[0]))
+      .attr("y1", (d: any) => y(d.id) + y.bandwidth() / 2 - 3)
+      .attr("y2", (d: any) => y(d.id) + y.bandwidth() / 2 + 3)
+      .attr("stroke", "black")
+      .attr("stroke-width", (d: any) => (d.ci[0] ? 1 : 0));
+    // .append("circle")
+    // .attr("class", "point1")
+    // .attr("cx", (d: any) => x(d.ci[0]))
+    // .attr("cy", (d: any) => y(d.id) + y.bandwidth() / 2)
+    // .attr("r", (d: any) => (d.ci[0] ? 2 : 0))
+    // .attr("fill", "#2879ff");
+
+    svg
+      .selectAll(".point2")
+      .data(data.value)
+      .enter()
+      .append("line")
+      .attr("class", "point2")
+      .attr("x1", (d: any) => x(d.ci[1]))
+      .attr("x2", (d: any) => x(d.ci[1]))
+      .attr("y1", (d: any) => y(d.id) + y.bandwidth() / 2 - 3)
+      .attr("y2", (d: any) => y(d.id) + y.bandwidth() / 2 + 3)
+      .attr("stroke", "black")
+      .attr("stroke-width", (d: any) => (d.ci[0] ? 1 : 0));
+    // .append("circle")
+    // .attr("class", "point2")
+    // .attr("cx", (d: any) => x(d.ci[1]))
+    // .attr("cy", (d: any) => y(d.id) + y.bandwidth() / 2)
+    // .attr("r", (d: any) => (d.ci[1] ? 2 : 0))
+    // .attr("fill", "#2879ff");
+  }
+  if (props.otherParams.centerDotImg) {
+    // 绘制点估计
     svg
       .selectAll(".point3")
       .data(data.value)
@@ -117,30 +159,8 @@ const drawChart = () => {
       .attr("y", (d: any) => y(d.id) + y.bandwidth() / 2 - 10) // 调整位置使图片居中
       .attr("width", (d: any) => (d.pointEstimate ? 20 : 0)) // 设置图片宽度
       .attr("height", 20) // 设置图片高度
-      .attr("xlink:href", props.otherParams.dotImg); // 自定义图片路径
+      .attr("xlink:href", props.otherParams.centerDotImg); // 自定义图片路径
   } else {
-    //默认点
-    svg
-      .selectAll(".point1")
-      .data(data.value)
-      .enter()
-      .append("circle")
-      .attr("class", "point1")
-      .attr("cx", (d: any) => x(d.ci[0]))
-      .attr("cy", (d: any) => y(d.id) + y.bandwidth() / 2)
-      .attr("r", (d: any) => (d.ci[0] ? 2 : 0))
-      .attr("fill", "#2879ff");
-
-    svg
-      .selectAll(".point2")
-      .data(data.value)
-      .enter()
-      .append("circle")
-      .attr("class", "point2")
-      .attr("cx", (d: any) => x(d.ci[1]))
-      .attr("cy", (d: any) => y(d.id) + y.bandwidth() / 2)
-      .attr("r", (d: any) => (d.ci[1] ? 2 : 0))
-      .attr("fill", "#2879ff");
     // 绘制点估计
     svg
       .selectAll(".point3")
@@ -150,8 +170,8 @@ const drawChart = () => {
       .attr("class", "point3")
       .attr("cx", (d: any) => x(d.pointEstimate))
       .attr("cy", (d: any) => y(d.id) + y.bandwidth() / 2)
-      .attr("r", (d: any) => (d.pointEstimate ? 5 : 0))
-      .attr("fill", "#2879ff");
+      .attr("r", (d: any) => (d.pointEstimate ? 3 : 0))
+      .attr("fill", "#337fff");
   }
 
   // 添加 p 值标签
