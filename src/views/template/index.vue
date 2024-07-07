@@ -33,7 +33,7 @@
       </div>
     </div>
     <div id="exportAll" class="preview">
-      <div v-for="item in tableData" :key="item.header">
+      <div v-for="(item, index1) in tableData" :key="index1">
         <div v-if="item.type != 'line'" class="data">
           <div class="dataItem">{{ item.header }}</div>
           <div class="dataItems">
@@ -173,7 +173,7 @@ const uploadExcel = (file: any, fileList: any) => {
       // });
       // });
       tableData.value = data;
-      console.log("导入excel", data);
+      console.log("导入excel", tableData.value);
       create();
     } catch (err) {
       console.log(err);
