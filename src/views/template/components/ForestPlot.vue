@@ -4,30 +4,35 @@
 
 <script lang="ts" setup>
 import * as d3 from "d3";
-import { ref } from "vue";
-interface DataSeries {
-  name: string;
-  pointEstimate: number;
-  ci: [number, number];
-}
+import { onMounted, ref, watch } from "vue";
 
-interface DataItem {
-  label: string;
-  series: DataSeries[];
-}
+const props = defineProps({
+  picData: {
+    type: Object,
+    default: {} as any
+  },
+  otherParams: {
+    type: Object,
+    default: {} as any
+  }
+} as any);
+
 const chart = ref(null as any);
-const data = ref<DataItem[]>([]);
+const data = ref([] as any);
+let max = ref(0 as any);
+let min = ref(0 as any);
+// 监听 picData 的变化
 
 const drawChart = () => {
-  const margin = { top: 80, right: 30, bottom: 40, left: 200 },
-    // width = 960 - margin.left - margin.right,
-    // height = data.value.length * 50 + margin.top + margin.bottom;
+  // 定义图表的宽度和高度
+  const margin = { top: 40, right: 20, bottom: 20, left: 20 },
+    width = Number(props.otherParams.xAxisWidth),
+    height = data.value.length * 20 + margin.top + margin.bottom;
 
-    width = 1920,
-    height = 1080;
-
+  // 清除以前的图表（如果有）
   d3.select(chart.value).select("svg").remove();
 
+  // 创建新的 SVG 元素
   const svg = d3
     .select(chart.value)
     .append("svg")
@@ -36,26 +41,18 @@ const drawChart = () => {
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  // 添加列头
-  const headers = ["character", "95% CI", "p", "p for interaction"];
-  headers.forEach((header, i) => {
-    svg
-      .append("text")
-      .attr("x", i === 0 ? -100 : i === 1 ? 200 : i === 2 ? 400 : i === 3 ? 500 : 600) // 设置每个列头的 x 坐标，调整位置
-      .attr("y", -margin.top / 2)
-      .attr("text-anchor", "start")
-      .style("font-size", "12px")
-      .style("font-weight", "bold")
-      .text(header);
-  });
-
-  const x = d3.scaleLinear().domain([0, 2]).range([0, 200]);
-  const y = d3
+  // 定义 x 轴和 y 轴的比例尺
+  const x: any = d3
+    .scaleLinear()
+    .domain([min.value, max.value])
+    .range([0, Number(props.otherParams.xAxisWidth)]);
+  const y: any = d3
     .scaleBand()
     .domain(data.value.map((d: any) => d.id))
     .range([0, height - margin.top - margin.bottom])
-    .padding(0.5);
+    .padding(0.1);
 
+  // 添加 x 轴，并将其移到底部
   svg
     .append("g")
     .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
@@ -64,110 +61,152 @@ const drawChart = () => {
   // 创建 y 轴，并将其位置移动到 x 轴的 1.0 位置
   svg
     .append("g")
-    .attr("transform", `translate(${x(1.0)},0)`)
+    .attr("transform", `translate(${x(props.otherParams.yAxis || 0)},0)`)
     .call(
       d3
         .axisLeft(y)
         .tickSize(0)
         .tickFormat("" as any)
-    ); // 将 Y 轴移动到 X 轴的 1.0 位置
+    );
 
-  const color = d3.scaleOrdinal(d3.schemeCategory10);
+  // 绘制置信区间的线
+  svg
+    .selectAll(".ci-line")
+    .data(data.value)
+    .enter()
+    .append("line")
+    .attr("class", "ci-line")
+    .attr("x1", (d: any) => x(d.ci[0]))
+    .attr("x2", (d: any) => x(d.ci[1]))
+    .attr("y1", (d: any) => y(d.id) + y.bandwidth() / 2)
+    .attr("y2", (d: any) => y(d.id) + y.bandwidth() / 2)
+    .attr("stroke", "black");
 
-  data.value.forEach((d: any) => {
-    d.series.forEach((s: any, i: number) => {
-      const yPos = y(d.id)! + ((i + 1) * y.bandwidth()) / (d.series.length + 1);
+  if (props.otherParams.dotImg) {
+    // 添加置信区间两个端点的圆点
+    // 图片点
+    svg
+      .selectAll(".point1")
+      .data(data.value)
+      .enter()
+      .append("image")
+      .attr("class", "point1")
+      .attr("x", (d: any) => x(d.ci[0]) - 5) // 调整位置使图片居中
+      .attr("y", (d: any) => y(d.id) + y.bandwidth() / 2 - 5) // 调整位置使图片居中
+      .attr("width", (d: any) => (d.ci[0] ? 10 : 0)) // 设置图片宽度
+      .attr("height", 10) // 设置图片高度
+      .attr("xlink:href", props.otherParams.dotImg); // 自定义图片路径
+    svg
+      .selectAll(".point2")
+      .data(data.value)
+      .enter()
+      .append("image")
+      .attr("class", "point2")
+      .attr("x", (d: any) => x(d.ci[1]) - 5) // 调整位置使图片居中
+      .attr("y", (d: any) => y(d.id) + y.bandwidth() / 2 - 5) // 调整位置使图片居中
+      .attr("width", (d: any) => (d.ci[1] ? 10 : 0)) // 设置图片宽度
+      .attr("height", 10) // 设置图片高度
+      .attr("xlink:href", props.otherParams.dotImg); // 自定义图片路径
+    svg
+      .selectAll(".point3")
+      .data(data.value)
+      .enter()
+      .append("image")
+      .attr("class", "point3")
+      .attr("x", (d: any) => x(d.pointEstimate) - 10) // 调整位置使图片居中
+      .attr("y", (d: any) => y(d.id) + y.bandwidth() / 2 - 10) // 调整位置使图片居中
+      .attr("width", (d: any) => (d.pointEstimate ? 20 : 0)) // 设置图片宽度
+      .attr("height", 20) // 设置图片高度
+      .attr("xlink:href", props.otherParams.dotImg); // 自定义图片路径
+  } else {
+    //默认点
+    svg
+      .selectAll(".point1")
+      .data(data.value)
+      .enter()
+      .append("circle")
+      .attr("class", "point1")
+      .attr("cx", (d: any) => x(d.ci[0]))
+      .attr("cy", (d: any) => y(d.id) + y.bandwidth() / 2)
+      .attr("r", (d: any) => (d.ci[0] ? 2 : 0))
+      .attr("fill", "#2879ff");
 
-      // 绘制置信区间的线
-      svg
-        .append("line")
-        .attr("class", "ci-line")
-        .attr("x1", x(s.ci[0]))
-        .attr("x2", x(s.ci[1]))
-        .attr("y1", yPos)
-        .attr("y2", yPos)
-        .attr("stroke", color(i.toString()));
+    svg
+      .selectAll(".point2")
+      .data(data.value)
+      .enter()
+      .append("circle")
+      .attr("class", "point2")
+      .attr("cx", (d: any) => x(d.ci[1]))
+      .attr("cy", (d: any) => y(d.id) + y.bandwidth() / 2)
+      .attr("r", (d: any) => (d.ci[1] ? 2 : 0))
+      .attr("fill", "#2879ff");
+    // 绘制点估计
+    svg
+      .selectAll(".point3")
+      .data(data.value)
+      .enter()
+      .append("circle")
+      .attr("class", "point3")
+      .attr("cx", (d: any) => x(d.pointEstimate))
+      .attr("cy", (d: any) => y(d.id) + y.bandwidth() / 2)
+      .attr("r", (d: any) => (d.pointEstimate ? 5 : 0))
+      .attr("fill", "#2879ff");
+  }
 
-      // 绘制点估计
-      svg
-        .append("circle")
-        .attr("class", "point")
-        .attr("cx", x(s.pointEstimate))
-        .attr("cy", yPos)
-        .attr("r", s.pointEstimate ? 5 : 0)
-        .attr("fill", color(i.toString()));
-
-      // 添加系列标签
-      svg
-        .append("text")
-        .attr("class", "series-label")
-        .attr("x", x(s.ci[1]) + 5)
-        .attr("y", yPos)
-        .attr("dy", ".35em")
-        .attr("fill", color(i.toString()))
-        .text(s.name);
-
-      // 添加置信区间两个端点的圆点
-      svg
-        .append("circle")
-        .attr("class", "ci-point")
-        .attr("cx", x(s.ci[0]))
-        .attr("cy", yPos)
-        .attr("r", s.ci[0] ? 2 : 0)
-        .attr("fill", color(i.toString()));
-
-      svg
-        .append("circle")
-        .attr("class", "ci-point")
-        .attr("cx", x(s.ci[1]))
-        .attr("cy", yPos)
-        .attr("r", s.ci[1] ? 2 : 0)
-        .attr("fill", color(i.toString()));
-
-      // 添加自定义的 y 轴标签
-      svg
-        .append("text")
-        .attr("class", "y-axis-label")
-        .attr("x", -200)
-        .attr("y", yPos)
-        .attr("dy", ".35em")
-        .attr("text-anchor", "start")
-        .attr("fill", "black")
-        .text(d.label);
-
-      // 添加自定义的 y 轴标签
-      svg
-        .append("text")
-        .attr("class", "y-axis-label")
-        .attr("x", 200)
-        .attr("y", yPos)
-        .attr("dy", ".35em")
-        .attr("text-anchor", "start")
-        .attr("fill", "black")
-        .text(s["95% CI"]);
-      // 添加自定义的 y 轴标签
-      svg
-        .append("text")
-        .attr("class", "y-axis-label")
-        .attr("x", 400)
-        .attr("y", yPos)
-        .attr("dy", ".35em")
-        .attr("text-anchor", "start")
-        .attr("fill", "black")
-        .text(s.p);
-      // 添加自定义的 y 轴标签
-      svg
-        .append("text")
-        .attr("class", "y-axis-label")
-        .attr("x", 500)
-        .attr("y", yPos)
-        .attr("dy", ".35em")
-        .attr("text-anchor", "start")
-        .attr("fill", "black")
-        .text(s["p for interaction"]);
-    });
-  });
+  // 添加 p 值标签
+  // svg
+  //   .selectAll(".p-value")
+  //   .data(data.value)
+  //   .enter()
+  //   .append("text")
+  //   .attr("class", "p-value")
+  //   .attr("x", d => x(d.ci[1]) + 5)
+  //   .attr("y", d => y(d.id) + y.bandwidth() / 2)
+  //   .attr("dy", ".35em")
+  //   .text(d => `p=${d.p}`);
 };
+watch(
+  () => props.picData,
+  (newVal: any, oldVal: any) => {
+    console.log("picData old:", oldVal);
+    console.log("picData new:", newVal);
+    data.value = newVal.data;
+    // 计算x轴坐标
+    let minMaxList = data.value.filter((item: any) => {
+      return Number(item.ci[0]);
+    });
+    max.value = minMaxList[0].ci[1];
+    min.value = minMaxList[0].ci[0];
+    minMaxList.forEach((item: any) => {
+      console.log(typeof item.ci[1] == "number");
+      if (typeof item.ci[1] == "number") {
+        max.value - item.ci[1] < 0 ? (max.value = item.ci[1]) : "";
+      }
+      if (typeof item.ci[0] == "number") {
+        min.value - item.ci[0] > 0 ? (min.value = item.ci[0]) : "";
+      }
+    });
+    max.value < 1 ? (max.value = 1) : "";
+    min.value > 0 ? (min.value = 0) : "";
+    console.log(max.value, min.value);
+
+    drawChart();
+  },
+  { deep: true, immediate: true }
+);
+watch(
+  () => props.otherParams,
+  (newVal: any, oldVal: any) => {
+    console.log("picData old:", oldVal);
+    console.log("picData new:", newVal);
+    drawChart();
+  },
+  { deep: true, immediate: true }
+);
+onMounted(() => {
+  drawChart();
+});
 defineExpose({
   drawChart,
   data

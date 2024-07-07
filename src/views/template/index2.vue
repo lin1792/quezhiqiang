@@ -219,6 +219,100 @@ const saveFile = (data: any, filename: any) => {
   save_link.click();
   save_link.remove();
 };
+
+// const drawChart = () => {
+//   const margin = { top: 80, right: 30, bottom: 40, left: 200 },
+//     // width = 960 - margin.left - margin.right,
+//     // height = data.value.length * 50 + margin.top + margin.bottom;
+
+//     width = 500,
+//     height = 1080;
+
+//   d3.select(chart.value).select("svg").remove();
+
+//   const svg = d3
+//     .select(chart.value)
+//     .append("svg")
+//     .attr("width", width + margin.left + margin.right)
+//     .attr("height", height + margin.top + margin.bottom)
+//     .append("g")
+//     .attr("transform", `translate(${margin.left},${margin.top})`);
+
+//   const x = d3.scaleLinear().domain([0, 2]).range([0, 200]);
+//   const y = d3
+//     .scaleBand()
+//     .domain(data.value.map((d: any) => d.id))
+//     .range([0, height - margin.top - margin.bottom])
+//     .padding(0.5);
+
+//   svg
+//     .append("g")
+//     .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
+//     .call(d3.axisBottom(x));
+
+//   // 创建 y 轴，并将其位置移动到 x 轴的 1.0 位置
+//   svg
+//     .append("g")
+//     .attr("transform", `translate(${x(1.0)},0)`)
+//     .call(
+//       d3
+//         .axisLeft(y)
+//         .tickSize(0)
+//         .tickFormat("" as any)
+//     ); // 将 Y 轴移动到 X 轴的 1.0 位置
+
+//   const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+//   data.value.forEach((d: any, i: any) => {
+//     const yPos = y(d.id)! + ((i + 1) * y.bandwidth()) / 2;
+
+//     // 绘制置信区间的线
+//     svg
+//       .append("line")
+//       .attr("class", "ci-line")
+//       .attr("x1", x(d.ci[0]))
+//       .attr("x2", x(d.ci[1]))
+//       .attr("y1", yPos)
+//       .attr("y2", yPos)
+//       .attr("stroke", color(i.toString()));
+
+//     // 绘制点估计
+//     svg
+//       .append("circle")
+//       .attr("class", "point")
+//       .attr("cx", x(d.pointEstimate))
+//       .attr("cy", yPos)
+//       .attr("r", d.pointEstimate ? 5 : 0)
+//       .attr("fill", color(i.toString()));
+
+//     // 添加系列标签
+//     svg
+//       .append("text")
+//       .attr("class", "series-label")
+//       .attr("x", x(d.ci[1]) + 5)
+//       .attr("y", yPos)
+//       .attr("dy", ".35em")
+//       .attr("fill", color(i.toString()))
+//       .text(d.name);
+
+//     // 添加置信区间两个端点的圆点
+//     svg
+//       .append("circle")
+//       .attr("class", "ci-point")
+//       .attr("cx", x(d.ci[0]))
+//       .attr("cy", yPos)
+//       .attr("r", d.ci[0] ? 2 : 0)
+//       .attr("fill", color(i.toString()));
+
+//     svg
+//       .append("circle")
+//       .attr("class", "ci-point")
+//       .attr("cx", x(d.ci[1]))
+//       .attr("cy", yPos)
+//       .attr("r", d.ci[1] ? 2 : 0)
+//       .attr("fill", color(i.toString()));
+//   });
+// };
 </script>
 
 <style scoped lang="scss">
