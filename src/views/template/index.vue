@@ -240,7 +240,7 @@ const saveAsPdf = () => {
 //   return outputArray;
 // };
 const saveAsTiff = () => {
-  alert("开发中")
+  alert("开发中");
 };
 
 onMounted(() => {
