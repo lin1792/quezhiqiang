@@ -241,25 +241,7 @@ const base64ToUint8Array = (base64String: any) => {
   return outputArray;
 };
 const saveAsTiff = () => {
-  const element: any = document.getElementById("exportAll");
-  html2canvas(element).then(canvas => {
-    const pageData = canvas.toDataURL("image/png");
-    // const pageData = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height);
-    const image = new Image();
-    image.src = pageData;
-    image.onload = () => {
-      console.log(image.src.split(",")[1]);
-      let u8 = base64ToUint8Array(image.src.split(",")[1]);
-      const tiff = UTIF.encodeImage(u8, 200, 300);
-      const blob = new Blob([tiff], { type: "image/tiff" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "exported-image.tiff";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    };
-  });
+  alert('开发中')
 };
 
 onMounted(() => {
