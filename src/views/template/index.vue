@@ -63,7 +63,6 @@
 <script lang="ts" setup>
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import UTIF from "UTIF";
 import XLSX from "xlsx";
 import ForestPlot from "./components/ForestPlot.vue";
 import { ref, onMounted } from "vue";
