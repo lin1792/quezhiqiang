@@ -240,7 +240,7 @@ const base64ToUint8Array = (base64String: any) => {
   return outputArray;
 };
 const saveAsTiff = () => {
-  alert('开发中')
+  alert("开发中")
 };
 
 onMounted(() => {
