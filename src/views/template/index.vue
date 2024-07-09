@@ -227,18 +227,18 @@ const saveAsPdf = () => {
   });
 };
 
-const base64ToUint8Array = (base64String: any) => {
-  let padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  let base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
+// const base64ToUint8Array = (base64String: any) => {
+//   let padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+//   let base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
 
-  let rawData = window.atob(base64);
-  let outputArray = new Uint8Array(rawData.length);
+//   let rawData = window.atob(base64);
+//   let outputArray = new Uint8Array(rawData.length);
 
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-};
+//   for (let i = 0; i < rawData.length; ++i) {
+//     outputArray[i] = rawData.charCodeAt(i);
+//   }
+//   return outputArray;
+// };
 const saveAsTiff = () => {
   alert("开发中")
 };
